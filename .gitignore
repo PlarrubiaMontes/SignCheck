@@ -1,0 +1,68 @@
+# ---------------------------------------------------------------
+# Java / Maven
+# ---------------------------------------------------------------
+target/
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+# The Maven wrapper (mvnw, mvnw.cmd, .mvn/wrapper/maven-wrapper.properties) IS committed.
+
+# ---------------------------------------------------------------
+# Node / Angular
+# ---------------------------------------------------------------
+node_modules/
+dist/
+.angular/
+coverage/
+npm-debug.log*
+yarn-error.log*
+
+# ---------------------------------------------------------------
+# IDEs and editors
+# ---------------------------------------------------------------
+.idea/
+*.iml
+.vscode/
+!.vscode/extensions.json
+.settings/
+.project
+.classpath
+.factorypath
+*.swp
+
+# ---------------------------------------------------------------
+# OS files
+# ---------------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------------------------------------------------------------
+# Local configuration and secrets (never commit)
+# ---------------------------------------------------------------
+.env
+.env.*
+application-local.yml
+application-local.properties
+
+# ---------------------------------------------------------------
+# Cryptographic material and signed documents
+# Test PKI material is generated in memory by the tests (see docs/ARCHITECTURE.md),
+# so none of these should ever be in the repo. Add explicit exceptions only for
+# clearly labelled TEST-ONLY files, and document why.
+# ---------------------------------------------------------------
+*.p12
+*.pfx
+*.jks
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+
+# ---------------------------------------------------------------
+# Runtime caches
+# ---------------------------------------------------------------
+# Trusted List cache (DSS file cache) when running locally
+tl-cache/

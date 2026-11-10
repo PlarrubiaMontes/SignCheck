@@ -5,7 +5,7 @@ and `./mvnw verify` (and the frontend checks, once the frontend exists) pass. Ti
 
 ## Phase 0 — Project setup
 
-- [ ] **0.1 Repository basics**
+- [x] **0.1 Repository basics**
   - `.gitignore` (Java, Maven, Node, IDEs, OS files), `LICENSE` (MIT or Apache-2.0, Pedro decides),
     `.editorconfig`, skeleton `README.md` with project goal and "work in progress" badge.
   - Done when: repo has those files and the README explains the goal in 3–5 lines.
