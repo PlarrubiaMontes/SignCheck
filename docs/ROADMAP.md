@@ -9,7 +9,7 @@ and `./mvnw verify` (and the frontend checks, once the frontend exists) pass. Ti
   - `.gitignore` (Java, Maven, Node, IDEs, OS files), `LICENSE` (MIT or Apache-2.0, Pedro decides),
     `.editorconfig`, skeleton `README.md` with project goal and "work in progress" badge.
   - Done when: repo has those files and the README explains the goal in 3–5 lines.
-- [ ] **0.2 Backend skeleton**
+- [x] **0.2 Backend skeleton**
   - Spring Boot app in `backend/` with Maven wrapper, Java 21, package `dev.signcheck`,
     `spring-boot-starter-web`, `validation`, `actuator`, `springdoc-openapi`, test starter.
   - `SignCheckProperties` with the structure from ARCHITECTURE §3 (values not used yet).

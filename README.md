@@ -10,6 +10,21 @@ technical details behind it: signer, signing time, signature level, certificate 
 It is built on the European Commission's [DSS (Digital Signature Services)](https://github.com/esig/dss) library,
 and a later phase adds signature creation with self-generated test certificates.
 
+## Quick start (backend)
+
+Requires Java 21. Maven is downloaded by the wrapper.
+
+```bash
+cd backend
+./mvnw verify            # build + tests
+./mvnw spring-boot:run   # http://localhost:8080 (profile "dev")
+```
+
+- Health: <http://localhost:8080/actuator/health>
+- Swagger UI: <http://localhost:8080/swagger-ui.html>
+
+Stack: Java 21, Spring Boot 4.1, springdoc-openapi 3.2.
+
 ## Documentation
 
 - [Specification](docs/SPEC.md) — functional requirements and REST API contract

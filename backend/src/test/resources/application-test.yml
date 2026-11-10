@@ -1,0 +1,4 @@
+# Tests never need internet (CLAUDE.md, rule 6): trust mode NONE; later tasks plug in the test PKI.
+signcheck:
+  trust:
+    mode: NONE

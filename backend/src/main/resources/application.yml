@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: signcheck
+
+signcheck:
+  upload:
+    max-file-size: 20MB
+  trust:
+    mode: NONE            # NONE | KEYSTORE | LOTL
+    lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
+    cache-dir: ${java.io.tmpdir}/signcheck-tl-cache
+    refresh-cron: "0 0 */6 * * *"
+    keystore:
+      path: classpath:trust/demo-ca.p12   # TEST-ONLY material, generated (phase 7)
+      password: changeit-test-only        # TEST-ONLY password, not a secret
+  network:
+    connect-timeout: 5s
+    read-timeout: 10s
+  signing:
+    enabled: false
+    tsa-url: ""           # public TSA for level T (phase 2)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
