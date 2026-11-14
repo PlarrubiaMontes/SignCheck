@@ -75,6 +75,18 @@ npm run build
   also sent as `Accept-Language`, so the backend explains verdicts in the same language. Verdicts always use an
   icon and a word, never colour alone.
 
+## Signing (demo)
+
+With `signcheck.signing.enabled=true` (profiles `dev` and `docker`) SignCheck can also sign: PAdES (PDF),
+XAdES (enveloped, enveloping, detached) and CAdES (`.p7m`, `.p7s`), level B, or level T when
+`signcheck.signing.tsa-url` points to an RFC 3161 time-stamping authority. It signs with a **TEST-ONLY demo
+certificate** from a demo CA the application generates on first start (outside the repository); the demo root
+is trusted while signing is enabled, so the result validates as `VALID`.
+
+```bash
+curl -F file=@contract.pdf -F format=PADES -OJ http://localhost:8080/api/v1/signatures   # saves contract-signed.pdf
+```
+
 ## Trust modes
 
 A signature can only be `VALID` if its certificate chain ends in a trusted certificate. `signcheck.trust.mode`

@@ -57,6 +57,13 @@ class HardeningTest {
     }
 
     @Test
+    void shouldNotExposeTheSigningEndpointWhenSigningIsDisabled() throws Exception {
+        mockMvc.perform(get("/api/v1/signatures/options"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    }
+
+    @Test
     void shouldAllowCrossOriginCallsFromTheConfiguredOrigin() throws Exception {
         mockMvc.perform(options(URL)
                         .header(HttpHeaders.ORIGIN, "http://localhost:4200")

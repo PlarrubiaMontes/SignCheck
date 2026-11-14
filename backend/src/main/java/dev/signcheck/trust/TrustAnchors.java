@@ -1,12 +1,16 @@
 package dev.signcheck.trust;
 
 import dev.signcheck.config.SignCheckProperties;
+import dev.signcheck.signing.DemoCertificateAuthority;
+import eu.europa.esig.dss.model.x509.CertificateToken;
 import eu.europa.esig.dss.spi.tsl.TrustedListsCertificateSource;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
 import eu.europa.esig.dss.spi.x509.CommonTrustedCertificateSource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -24,6 +28,8 @@ import org.springframework.stereotype.Component;
  *       Trusted Lists also carry the <em>qualification</em> of each service (e.g. "issues qualified
  *       certificates"), which DSS uses to decide whether a signature is a qualified electronic signature.</li>
  * </ul>
+ * When signing is enabled, the root of the TEST-ONLY {@link DemoCertificateAuthority} is trusted as well (in every
+ * mode), so documents signed by the demo can be validated as {@code VALID}.
  */
 @Component
 public class TrustAnchors {
@@ -31,8 +37,19 @@ public class TrustAnchors {
     private final TrustMode mode;
     private final CommonTrustedCertificateSource keystoreSource;
     private final TrustedListsCertificateSource trustedLists;
+    private final CommonTrustedCertificateSource demoCaSource;
 
+    /** Without demo CA (tests, signing disabled). */
     public TrustAnchors(SignCheckProperties properties) {
+        this(properties, (DemoCertificateAuthority) null);
+    }
+
+    @Autowired
+    public TrustAnchors(SignCheckProperties properties, ObjectProvider<DemoCertificateAuthority> demoCa) {
+        this(properties, demoCa.getIfAvailable());
+    }
+
+    public TrustAnchors(SignCheckProperties properties, DemoCertificateAuthority demoCa) {
         SignCheckProperties.Trust trust = properties.trust();
         this.mode = trust.mode();
         this.keystoreSource = switch (mode) {
@@ -43,20 +60,29 @@ public class TrustAnchors {
                     : null;
         };
         this.trustedLists = mode == TrustMode.LOTL ? new TrustedListsCertificateSource() : null;
+        if (demoCa == null) {
+            this.demoCaSource = null;
+        } else {
+            this.demoCaSource = new CommonTrustedCertificateSource();
+            demoCaSource.addCertificate(new CertificateToken(demoCa.root()));
+        }
     }
 
     public TrustMode mode() {
         return mode;
     }
 
-    /** Every trusted certificate source of the current mode (empty in {@link TrustMode#NONE}). */
+    /** Every trusted certificate source of the current mode (plus the demo CA when signing is enabled). */
     public List<CertificateSource> sources() {
-        List<CertificateSource> sources = new ArrayList<>(2);
+        List<CertificateSource> sources = new ArrayList<>(3);
         if (trustedLists != null) {
             sources.add(trustedLists);
         }
         if (keystoreSource != null) {
             sources.add(keystoreSource);
+        }
+        if (demoCaSource != null) {
+            sources.add(demoCaSource);
         }
         return List.copyOf(sources);
     }

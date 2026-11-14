@@ -31,7 +31,7 @@ public final class TestProperties {
                         new SignCheckProperties.Keystore(new DefaultResourceLoader().getResource(keystoreLocation),
                                 TestPkiFiles.PASSWORD)),
                 new SignCheckProperties.Network(Duration.ofSeconds(1), Duration.ofSeconds(1)),
-                new SignCheckProperties.Signing(false, ""),
+                new SignCheckProperties.Signing(false, "", Path.of("target/demo-ca")),
                 new SignCheckProperties.Cors(List.of()));
     }
 

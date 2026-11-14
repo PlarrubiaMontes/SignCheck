@@ -90,11 +90,17 @@ public record SignCheckProperties(
     }
 
     /**
-     * Signature creation (phase 2).
+     * Signature creation with the application's own demo certificate authority.
      *
-     * @param enabled whether the signing endpoint is active
-     * @param tsaUrl  timestamping authority URL for level T signatures; empty when not configured
+     * @param enabled   whether the signing endpoint is active (the demo CA is then also a trust anchor)
+     * @param tsaUrl    RFC 3161 timestamping authority URL for level T signatures; empty disables level T
+     * @param demoCaDir directory where the demo CA keystore is generated on first start and reused afterwards;
+     *                  never inside the repository
      */
-    public record Signing(boolean enabled, String tsaUrl) {
+    public record Signing(boolean enabled, String tsaUrl, Path demoCaDir) {
+
+        public boolean timestampingEnabled() {
+            return tsaUrl != null && !tsaUrl.isBlank();
+        }
     }
 }

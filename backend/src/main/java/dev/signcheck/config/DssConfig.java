@@ -1,13 +1,24 @@
 package dev.signcheck.config;
 
+import dev.signcheck.signing.DemoCaRevocationSource;
+import dev.signcheck.signing.DemoCertificateAuthority;
 import dev.signcheck.trust.TrustAnchors;
 import dev.signcheck.trust.TrustMode;
+import eu.europa.esig.dss.model.x509.revocation.crl.CRL;
 import eu.europa.esig.dss.service.crl.OnlineCRLSource;
 import eu.europa.esig.dss.service.ocsp.OnlineOCSPSource;
+import eu.europa.esig.dss.service.tsp.OnlineTSPSource;
+import eu.europa.esig.dss.spi.x509.CompositeRevocationSource;
+import eu.europa.esig.dss.spi.x509.revocation.RevocationSource;
+import eu.europa.esig.dss.spi.x509.tsp.TSPSource;
 import eu.europa.esig.dss.spi.validation.CertificateVerifier;
 import eu.europa.esig.dss.spi.validation.CommonCertificateVerifier;
 import eu.europa.esig.dss.spi.x509.CertificateSource;
 import eu.europa.esig.dss.spi.x509.aia.DefaultAIASource;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,6 +43,7 @@ import org.springframework.context.annotation.Configuration;
  *   <tr><td>LOTL</td><td>EU Trusted Lists (+ keystore)</td><td>yes</td><td>yes</td></tr>
  * </table>
  * In {@code NONE} nothing can be trusted, so going online would only cost time: it stays fully offline.
+ * When signing is enabled, the demo CA's own CRL is consulted first, locally, in every mode.
  */
 @Configuration(proxyBeanMethods = false)
 public class DssConfig {
@@ -42,21 +54,51 @@ public class DssConfig {
     }
 
     @Bean
-    CertificateVerifier certificateVerifier(TrustAnchors trustAnchors, NetworkDataLoaders loaders) {
-        return buildCertificateVerifier(trustAnchors, loaders);
+    CertificateVerifier certificateVerifier(TrustAnchors trustAnchors, NetworkDataLoaders loaders,
+            ObjectProvider<DemoCertificateAuthority> demoCa) {
+        return buildCertificateVerifier(trustAnchors, loaders, demoCa.getIfAvailable());
+    }
+
+    /** RFC 3161 timestamping authority for level T signatures, only when {@code signcheck.signing.tsa-url} is set. */
+    @Bean
+    @ConditionalOnExpression("!'${signcheck.signing.tsa-url:}'.isBlank()")
+    TSPSource tspSource(SignCheckProperties properties, NetworkDataLoaders loaders) {
+        return new OnlineTSPSource(properties.signing().tsaUrl(), loaders.tsp());
     }
 
     /** Builds the verifier for the trust mode of {@code trustAnchors} (public for unit tests). */
     public static CertificateVerifier buildCertificateVerifier(TrustAnchors trustAnchors, NetworkDataLoaders loaders) {
+        return buildCertificateVerifier(trustAnchors, loaders, null);
+    }
+
+    /**
+     * @param demoCa demo CA whose CRL is answered locally, or {@code null} when signing is disabled
+     */
+    public static CertificateVerifier buildCertificateVerifier(TrustAnchors trustAnchors, NetworkDataLoaders loaders,
+            DemoCertificateAuthority demoCa) {
         CommonCertificateVerifier verifier = new CommonCertificateVerifier();
         // DSS's default constructor installs an online AIA source with its own HTTP client (no timeouts,
         // outside NetworkDataLoaders). Remove it: AIA is only enabled, through our loaders, in LOTL mode.
         verifier.setAIASource(null);
-        if (trustAnchors.mode() == TrustMode.NONE) {
+        boolean online = trustAnchors.mode() != TrustMode.NONE;
+        if (!online && demoCa == null) {
             return verifier;
         }
         verifier.setTrustedCertSources(trustAnchors.sources().toArray(CertificateSource[]::new));
-        verifier.setCrlSource(new OnlineCRLSource(loaders.http()));
+
+        Map<String, RevocationSource<CRL>> crlSources = new LinkedHashMap<>();
+        if (demoCa != null) {
+            crlSources.put("demo-ca", new DemoCaRevocationSource(demoCa));
+        }
+        if (online) {
+            crlSources.put("online", new OnlineCRLSource(loaders.http()));
+        }
+        CompositeRevocationSource<CRL> crlSource = new CompositeRevocationSource<>();
+        crlSource.setSources(crlSources);
+        verifier.setCrlSource(crlSource);
+        if (!online) {
+            return verifier;
+        }
         verifier.setOcspSource(new OnlineOCSPSource(loaders.ocsp()));
         if (trustAnchors.mode() == TrustMode.LOTL) {
             verifier.setAIASource(new DefaultAIASource(loaders.http()));

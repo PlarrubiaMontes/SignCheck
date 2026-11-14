@@ -27,6 +27,6 @@ public final class OfflineNetwork {
             throw new IllegalStateException(e);
         }
         MemoryDataLoader loader = new MemoryDataLoader(content);
-        return new NetworkDataLoaders(loader, loader);
+        return new NetworkDataLoaders(loader, loader, loader);
     }
 }

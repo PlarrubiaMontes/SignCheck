@@ -146,7 +146,10 @@ Response `200 OK`:
 
 `multipart/form-data`: `file`, `format` (`PADES|XADES|CADES`), `packaging`
 (`ENVELOPED|ENVELOPING|DETACHED`, optional), `level` (`B|T`).
-Returns the signed file as `application/octet-stream` with a proper `Content-Disposition`.
+Returns the signed file (`application/pdf`, `application/xml`, `application/pkcs7-mime` or
+`application/pkcs7-signature`) with a `Content-Disposition: attachment` file name.
+`GET /api/v1/signatures/options` lists the formats and levels available (`T` only when a TSA is configured).
+Both endpoints exist only when `signcheck.signing.enabled=true` (404 otherwise).
 
 ### Verdict mapping
 
@@ -171,6 +174,7 @@ RFC 9457 `ProblemDetail` with an extra `code`:
 | 413 | `FILE_TOO_LARGE` | file over the configured limit |
 | 422 | `NO_SIGNATURE_FOUND` | the file is valid but contains no signature |
 | 422 | `UNSUPPORTED_FORMAT` | DSS can't recognise the file as a supported signed document |
+| 400 | `INVALID_SIGNING_REQUEST` | signing: unsupported format/packaging/level combination or unsuitable file |
 | 500 | `VALIDATION_ERROR` | unexpected failure (no stack traces in the response) |
 
 Standard HTTP errors raised by the framework (wrong method, non-multipart request...) are also

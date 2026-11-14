@@ -9,6 +9,7 @@ services:
       SIGNCHECK_TRUST_MODE: ${SIGNCHECK_TRUST_MODE:-NONE}
     volumes:
       - tl-cache:/var/cache/signcheck/tl
+      - demo-ca:/var/lib/signcheck/demo-ca   # generated TEST-ONLY demo CA, kept across restarts
     restart: unless-stopped
 
   frontend:
@@ -21,3 +22,4 @@ services:
 
 volumes:
   tl-cache:
+  demo-ca:

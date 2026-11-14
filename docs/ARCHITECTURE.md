@@ -169,9 +169,12 @@ All signed test material is **generated**, never committed from the outside worl
 For tests needing timestamps, implement a small in-memory `TSPSource` signed by a test TSA certificate
 from the same test PKI.
 
-For the **phase 2 demo signer**, a script or a one-off `main` in `tools/` generates `demo-ca.p12`
-and the demo signer PKCS#12. Their passwords are explicitly marked "test only" and the certificates
-contain `TEST` in their subject so they can never be confused with real ones.
+For the **phase 2 demo signer**, `DemoCertificateAuthority` generates a demo root and signer on first
+start into `signcheck.signing.demo-ca-dir` (a Docker volume; never the repository) and reuses them afterwards,
+so signed documents keep validating after a restart. The keystore password is marked "test only" and the
+certificates contain `TEST ONLY` in their subject. When signing is enabled the demo root is a trust anchor in
+every mode and its (empty) CRL is answered locally by `DemoCaRevocationSource`, chained before the online CRL
+source, so demo signatures are `VALID` even offline.
 
 ## 5. Testing strategy
 

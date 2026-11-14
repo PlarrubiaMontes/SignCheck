@@ -4,3 +4,6 @@ signcheck:
   trust:
     mode: LOTL
     cache-dir: /var/cache/signcheck/tl
+  signing:
+    enabled: true
+    demo-ca-dir: /var/lib/signcheck/demo-ca

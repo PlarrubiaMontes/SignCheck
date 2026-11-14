@@ -38,7 +38,8 @@ signcheck:
     allowed-origins: []   # same-origin in production (nginx serves the UI and proxies /api)
   signing:
     enabled: false
-    tsa-url: ""           # public TSA for level T (phase 2)
+    tsa-url: ""           # RFC 3161 TSA for level T signatures; empty disables level T
+    demo-ca-dir: ${java.io.tmpdir}/signcheck-demo-ca   # generated TEST-ONLY demo CA (never in the repo)
 
 logging:
   level:

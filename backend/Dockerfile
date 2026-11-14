@@ -20,5 +20,5 @@ COPY --from=build /build/target/signcheck-backend-*.jar app.jar
 USER signcheck
 ENV SPRING_PROFILES_ACTIVE=docker
 EXPOSE 8080
-VOLUME ["/var/cache/signcheck/tl"]
+VOLUME ["/var/cache/signcheck/tl", "/var/lib/signcheck/demo-ca"]
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "/app/app.jar"]

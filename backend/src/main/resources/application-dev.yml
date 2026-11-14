@@ -5,6 +5,8 @@ signcheck:
   cors:
     allowed-origins:
       - http://localhost:4200
+  signing:
+    enabled: true
 
 logging:
   level:
