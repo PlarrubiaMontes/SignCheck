@@ -13,8 +13,8 @@ RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp package -DskipTests
 FROM eclipse-temurin:21-jre-noble
 RUN groupadd --system signcheck \
     && useradd --system --gid signcheck --home-dir /app --shell /usr/sbin/nologin signcheck \
-    && mkdir -p /app /var/cache/signcheck/tl \
-    && chown -R signcheck:signcheck /app /var/cache/signcheck
+    && mkdir -p /app /var/cache/signcheck/tl /var/lib/signcheck/demo-ca \
+    && chown -R signcheck:signcheck /app /var/cache/signcheck /var/lib/signcheck
 WORKDIR /app
 COPY --from=build /build/target/signcheck-backend-*.jar app.jar
 USER signcheck
