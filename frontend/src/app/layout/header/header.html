@@ -1,0 +1,16 @@
+<header class="header">
+  <a routerLink="/" class="brand">
+    <span aria-hidden="true">🔏</span> {{ 'app.title' | t }}
+  </a>
+  <span class="tagline">{{ 'app.tagline' | t }}</span>
+
+  <p class="trust" role="status" aria-live="polite" data-testid="trust">{{ trustText() }}</p>
+
+  <div class="languages" role="group" [attr.aria-label]="'app.language' | t">
+    @for (lang of languages; track lang) {
+      <button type="button" class="lang" [attr.aria-pressed]="lang === language()" (click)="switchTo(lang)">
+        {{ lang.toUpperCase() }}
+      </button>
+    }
+  </div>
+</header>

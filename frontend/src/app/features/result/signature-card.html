@@ -1,0 +1,84 @@
+@let s = signature();
+<article class="card signature" [attr.aria-labelledby]="'sig-' + index()">
+  <header class="signature__header">
+    <h2 [id]="'sig-' + index()">{{ 'result.signature' | t: { index: index() + 1 } }}</h2>
+    <app-verdict-badge [verdict]="s.verdict" />
+  </header>
+
+  @if (s.reason) {
+    <p class="reason" data-testid="reason">{{ s.reason }}</p>
+  }
+
+  <dl class="facts">
+    <dt>{{ 'result.signer' | t }}</dt>
+    <dd data-testid="signer">
+      @if (s.signer; as signer) {
+        {{ signer.commonName ?? '—' }}
+        @if (signer.organization) { · {{ signer.organization }} }
+        @if (signer.country) { · {{ signer.country }} }
+      } @else {
+        —
+      }
+    </dd>
+    <dt>{{ 'result.issuer' | t }}</dt>
+    <dd>{{ s.issuer ?? '—' }}</dd>
+    <dt>{{ 'result.level' | t }}</dt>
+    <dd>{{ s.level ?? '—' }}</dd>
+    <dt>{{ 'result.qualification' | t }}</dt>
+    <dd>{{ s.qualification ?? '—' }}</dd>
+    <dt>{{ 'result.claimedTime' | t }}</dt>
+    <dd>{{ s.claimedSigningTime | localDate }}</dd>
+    <dt>{{ 'result.bestTime' | t }}</dt>
+    <dd>{{ s.bestSignatureTime | localDate }}</dd>
+  </dl>
+
+  <details class="details">
+    <summary>{{ 'result.details' | t }}</summary>
+
+    @if (s.subIndication) {
+      <p><strong>{{ 'result.subIndication' | t }}:</strong> <code>{{ s.subIndication }}</code></p>
+    }
+
+    <h3>{{ 'result.chain' | t }}</h3>
+    <ol class="chain">
+      @for (certificate of s.certificateChain; track $index) {
+        <li>
+          <code>{{ certificate.subject }}</code>
+          @if (certificate.trusted) { <span class="tag">{{ 'result.trusted' | t }}</span> }
+          <br />
+          <small>{{ 'result.validity' | t: { from: (certificate.notBefore | localDate: true), to: (certificate.notAfter | localDate: true) } }}</small>
+        </li>
+      }
+    </ol>
+
+    <h3>{{ 'result.revocation' | t }}</h3>
+    @if (s.revocation; as revocation) {
+      <p>{{ 'result.revocationValue' | t: { status: revocation.status ?? '—', source: revocation.source ?? '—', time: (revocation.producedAt | localDate) } }}</p>
+    } @else {
+      <p>{{ 'result.revocationNone' | t }}</p>
+    }
+
+    <h3>{{ 'result.timestamps' | t }}</h3>
+    @if (s.timestamps.length) {
+      <ul>
+        @for (timestamp of s.timestamps; track $index) {
+          <li>
+            {{ timestamp.type }} · {{ timestamp.productionTime | localDate }} · {{ timestamp.tsaName ?? '—' }} ·
+            {{ (timestamp.valid ? 'result.timestampValid' : 'result.timestampInvalid') | t }}
+          </li>
+        }
+      </ul>
+    } @else {
+      <p>{{ 'result.timestampsNone' | t }}</p>
+    }
+
+    @if (s.errors.length) {
+      <h3>{{ 'result.errors' | t }}</h3>
+      <ul>@for (message of s.errors; track $index) { <li>{{ message }}</li> }</ul>
+    }
+    @if (s.warnings.length) {
+      <h3>{{ 'result.warnings' | t }}</h3>
+      <ul>@for (message of s.warnings; track $index) { <li>{{ message }}</li> }</ul>
+    }
+  </details>
+</article>

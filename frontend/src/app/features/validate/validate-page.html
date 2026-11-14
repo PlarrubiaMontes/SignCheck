@@ -1,0 +1,44 @@
+<section class="card">
+  <h1>{{ 'upload.heading' | t }}</h1>
+  <p class="muted">{{ 'upload.intro' | t }}</p>
+
+  <form (submit)="$event.preventDefault(); submit()">
+    <app-file-drop [label]="'upload.drop' | t" (filesSelected)="chooseFile($event)" />
+    @if (file(); as selected) {
+      <p class="selected" data-testid="selected-file">{{ selectedText(selected, (selected.size | fileSize)) }}</p>
+    }
+
+    <label class="check">
+      <input type="checkbox" [checked]="detached()" (change)="detached.set($any($event.target).checked)" />
+      {{ 'upload.detachedToggle' | t }}
+    </label>
+
+    @if (detached()) {
+      <app-file-drop [label]="'upload.dropOriginals' | t" [multiple]="true" (filesSelected)="addOriginals($event)" />
+      <ul class="originals">
+        @for (original of originals(); track $index) {
+          <li>
+            {{ original.name }} ({{ original.size | fileSize }})
+            <button type="button" class="link" (click)="removeOriginal($index)">{{ 'upload.remove' | t }}</button>
+          </li>
+        }
+      </ul>
+    }
+
+    <label class="check">
+      <input type="checkbox" [checked]="includeRawReports()"
+             (change)="includeRawReports.set($any($event.target).checked)" />
+      {{ 'upload.rawReports' | t }}
+    </label>
+
+    @if (errorKey(); as key) {
+      <p class="error" role="alert" data-testid="error">
+        <span aria-hidden="true">⚠</span> {{ key | t }}
+      </p>
+    }
+
+    <button type="submit" class="primary" [disabled]="!canSubmit()" [attr.aria-busy]="loading()">
+      {{ (loading() ? 'upload.validating' : 'upload.submit') | t }}
+    </button>
+  </form>
+</section>

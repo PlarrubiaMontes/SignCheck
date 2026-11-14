@@ -72,12 +72,12 @@ and `./mvnw verify` (and the frontend checks, once the frontend exists) pass. Ti
 
 ## Phase 5 — Frontend
 
-- [ ] **5.1 Angular skeleton** — strict mode, routing, proxy to backend, CI workflow for the frontend.
-- [ ] **5.2 Upload page** — drop zone (keyboard accessible), optional originals, loading and error states.
-- [ ] **5.3 Result page** — summary banner, signature cards, technical details panel, raw report and JSON downloads.
-- [ ] **5.4 Trust status indicator** in the header.
-- [ ] **5.5 i18n** — English and Spanish, language switcher.
-- [ ] **5.6 Tests** — services and main components.
+- [x] **5.1 Angular skeleton** — strict mode, routing, proxy to backend, CI workflow for the frontend.
+- [x] **5.2 Upload page** — drop zone (keyboard accessible), optional originals, loading and error states.
+- [x] **5.3 Result page** — summary banner, signature cards, technical details panel, raw report and JSON downloads.
+- [x] **5.4 Trust status indicator** in the header.
+- [x] **5.5 i18n** — English and Spanish, language switcher.
+- [x] **5.6 Tests** — services and main components.
 
 ## Phase 6 — Delivery
 

@@ -1,0 +1,33 @@
+@if (result(); as r) {
+  <section class="banner" [class]="'banner banner--' + r.summary.overallVerdict.toLowerCase()" data-testid="banner">
+    <h1>{{ 'result.heading' | t }}</h1>
+    <app-verdict-badge [verdict]="r.summary.overallVerdict" />
+    <p class="banner__summary">
+      {{ 'result.summary' | t: { valid: r.summary.validCount, count: r.summary.signatureCount } }}
+    </p>
+    <dl class="meta">
+      <dt>{{ 'result.file' | t }}</dt><dd>{{ r.fileName ?? '—' }}</dd>
+      <dt>{{ 'result.format' | t }}</dt><dd>{{ r.detectedFormat ?? '—' }}</dd>
+      <dt>{{ 'result.trustMode' | t }}</dt><dd>{{ r.trustMode }}</dd>
+      <dt>{{ 'result.validationTime' | t }}</dt><dd>{{ r.validationTime | localDate }}</dd>
+    </dl>
+    <div class="actions">
+      <a routerLink="/" class="button">{{ 'result.back' | t }}</a>
+      <button type="button" (click)="downloadJson()">{{ 'result.downloadJson' | t }}</button>
+      @for (report of reports(); track report.key) {
+        <button type="button" (click)="downloadReport(report)">
+          {{ 'result.downloadReport' | t: { name: report.name } }}
+        </button>
+      }
+    </div>
+  </section>
+
+  @for (signature of r.signatures; track signature.id; let i = $index) {
+    <app-signature-card [signature]="signature" [index]="i" />
+  }
+} @else {
+  <section class="card">
+    <p data-testid="empty">{{ 'result.empty' | t }}</p>
+    <a routerLink="/" class="button">{{ 'result.back' | t }}</a>
+  </section>
+}

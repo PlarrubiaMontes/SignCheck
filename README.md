@@ -1,6 +1,7 @@
 # SignCheck
 
 ![Status: work in progress](https://img.shields.io/badge/status-work%20in%20progress-orange)
+[![Frontend CI](https://github.com/PlarrubiaMontes/SignCheck/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/PlarrubiaMontes/SignCheck/actions/workflows/frontend-ci.yml)
 [![Backend CI](https://github.com/PlarrubiaMontes/SignCheck/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/PlarrubiaMontes/SignCheck/actions/workflows/backend-ci.yml)
 ![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)
 
@@ -54,6 +55,26 @@ curl -F file=@target/samples/pades-tampered.pdf -H 'Accept-Language: es' http://
 `VALID` results need the test root as trust anchor *and* its CRLs, which only the automated tests serve (from an
 in-memory network): see `PadesValidationTest`. The demo CA of the signing phase will make `VALID` reachable by hand.
 
+## Frontend
+
+Angular 22 (standalone components, signals, zoneless, strict TypeScript), plain SCSS with light and dark themes.
+Requires Node.js 22.22+, 24.15+ or 26 (see `frontend/.nvmrc`).
+
+```bash
+cd frontend
+npm ci
+npm start        # http://localhost:4200, proxies /api to the backend on :8080
+npm test         # Vitest unit tests
+npm run build
+```
+
+- Upload page with a keyboard-accessible drop zone, optional originals for detached signatures and optional raw reports.
+- Result page: summary banner, one card per signature with a plain-language reason, technical details
+  (chain, revocation, timestamps, warnings) and downloads of the JSON result and the DSS XML reports.
+- Trust status in the header (polls while the EU trusted lists load); English / Spanish switcher. The language is
+  also sent as `Accept-Language`, so the backend explains verdicts in the same language. Verdicts always use an
+  icon and a word, never colour alone.
+
 ## Trust modes
 
 A signature can only be `VALID` if its certificate chain ends in a trusted certificate. `signcheck.trust.mode`
@@ -102,11 +123,13 @@ modules and libraries Spring Boot does not manage (BouncyCastle, PDFBox).
 
 ## Continuous integration
 
+- **Frontend CI** ([`.github/workflows/frontend-ci.yml`](.github/workflows/frontend-ci.yml)) runs `npm ci`,
+  `npm test` and `npm run build` for changes under `frontend/`.
 - **Backend CI** ([`.github/workflows/backend-ci.yml`](.github/workflows/backend-ci.yml)) runs
   `./mvnw verify` on Temurin 21 for every push and pull request to `main` that touches `backend/`.
   Maven dependencies are cached, and Surefire reports are uploaded as an artifact when tests fail.
 - **Dependabot** ([`.github/dependabot.yml`](.github/dependabot.yml)) checks Maven dependencies and
-  GitHub Actions weekly; minor and patch updates are grouped into one pull request per ecosystem.
+  GitHub Actions and npm weekly; minor and patch updates are grouped into one pull request per ecosystem.
 
 ## Documentation
 
