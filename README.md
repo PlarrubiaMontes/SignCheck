@@ -32,6 +32,28 @@ curl -F file=@contract-signed.pdf http://localhost:8080/api/v1/validations
 curl http://localhost:8080/api/v1/trust/status
 ```
 
+### Try it with generated samples
+
+No real signed document is needed: the test PKI can write TEST-ONLY samples to `backend/target/samples`.
+
+```bash
+cd backend
+./mvnw test -Dtest=SampleFilesGenerator -Dsamples=true   # writes target/samples/*
+./mvnw spring-boot:run                                   # profile "dev", trust mode NONE
+curl -F file=@target/samples/pades-tampered.pdf -H 'Accept-Language: es' http://localhost:8080/api/v1/validations
+```
+
+| Sample | Expected in mode `NONE` |
+|---|---|
+| `pades-tampered.pdf` | `INVALID` / `HASH_FAILURE` |
+| `pades-valid.pdf`, `xades-enveloped.xml`, `cades-attached.p7m` | `INDETERMINATE` / `NO_CERTIFICATE_CHAIN_FOUND` (nothing is trusted) |
+| `xades-detached.xml` or `cades-detached.p7s` without `-F originals=@target/samples/original.txt` | `INDETERMINATE` / `SIGNED_DATA_NOT_FOUND` |
+| `pades-two-signatures-one-broken.pdf` | first `INDETERMINATE`, second `INVALID` / `SIG_CRYPTO_FAILURE` |
+| `unsigned.pdf` | HTTP 422, `code: NO_SIGNATURE_FOUND` |
+
+`VALID` results need the test root as trust anchor *and* its CRLs, which only the automated tests serve (from an
+in-memory network): see `PadesValidationTest`. The demo CA of the signing phase will make `VALID` reachable by hand.
+
 ## Trust modes
 
 A signature can only be `VALID` if its certificate chain ends in a trusted certificate. `signcheck.trust.mode`
