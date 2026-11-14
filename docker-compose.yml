@@ -1,0 +1,23 @@
+# Whole stack: http://localhost:8081 (UI + API through nginx).
+#
+# Trust mode defaults to NONE so the stack starts with no manual setup. For eIDAS validation with the EU
+# Trusted Lists add docker-compose.lotl.yml (see that file and the README).
+services:
+  backend:
+    build: ./backend
+    environment:
+      SIGNCHECK_TRUST_MODE: ${SIGNCHECK_TRUST_MODE:-NONE}
+    volumes:
+      - tl-cache:/var/cache/signcheck/tl
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8081:8080"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  tl-cache:

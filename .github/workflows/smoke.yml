@@ -1,0 +1,58 @@
+# Builds the Docker images and checks that the whole stack starts and answers through nginx.
+name: Docker smoke test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: docker compose up
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Build and start the stack
+        run: docker compose up --detach --build
+
+      - name: Wait for the API behind nginx
+        run: |
+          for i in $(seq 1 60); do
+            curl --fail --silent http://localhost:8081/api/v1/trust/status && exit 0
+            sleep 2
+          done
+          echo "Backend did not become ready" >&2
+          exit 1
+
+      - name: Check UI, routing and an API error through the proxy
+        run: |
+          set -euo pipefail
+          curl --fail --silent http://localhost:8081/ | grep -q "<title>SignCheck</title>"
+          curl --fail --silent http://localhost:8081/result | grep -q "<app-root"   # SPA fallback
+          head -c 2048 /dev/urandom > random.bin
+          status=$(curl --silent --output body.json --write-out "%{http_code}" \
+            -F file=@random.bin http://localhost:8081/api/v1/validations)
+          cat body.json
+          test "$status" = "422"
+          grep -q '"code":"UNSUPPORTED_FORMAT"' body.json
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Stop the stack
+        if: always()
+        run: docker compose down --volumes

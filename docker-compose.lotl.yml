@@ -1,0 +1,14 @@
+# LOTL trust mode: the backend loads the EU List of Trusted Lists and checks revocation online.
+# The LOTL signing certificates announced in the Official Journal are real EU certificates, so they are not
+# in this repository: point LOTL_KEYSTORE to a PKCS#12 file holding them.
+#
+#   LOTL_KEYSTORE=/path/oj-keystore.p12 LOTL_KEYSTORE_PASSWORD=... \
+#     docker compose -f docker-compose.yml -f docker-compose.lotl.yml up --build
+services:
+  backend:
+    environment:
+      SIGNCHECK_TRUST_MODE: LOTL
+      SIGNCHECK_TRUST_LOTL_KEYSTORE_PATH: file:/run/signcheck/oj-keystore.p12
+      SIGNCHECK_TRUST_LOTL_KEYSTORE_PASSWORD: ${LOTL_KEYSTORE_PASSWORD:?set LOTL_KEYSTORE_PASSWORD}
+    volumes:
+      - ${LOTL_KEYSTORE:?set LOTL_KEYSTORE to the Official Journal keystore}:/run/signcheck/oj-keystore.p12:ro
