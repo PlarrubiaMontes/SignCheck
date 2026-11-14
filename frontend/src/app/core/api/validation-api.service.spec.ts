@@ -5,6 +5,7 @@ import { acceptLanguageInterceptor } from '../i18n/accept-language.interceptor';
 import { I18nService } from '../i18n/i18n.service';
 import { validationResponse } from '../../testing/fixtures';
 import { ValidationApiService } from './validation-api.service';
+import { SigningApiService } from './signing-api.service';
 import { TrustApiService } from './trust-api.service';
 
 describe('API services', () => {
@@ -47,5 +48,31 @@ describe('API services', () => {
     const request = http.expectOne('/api/v1/trust/status');
     expect(request.request.headers.get('Accept-Language')).toBe('es');
     request.flush({});
+  });
+
+  it('signs and names the result after the Content-Disposition header', () => {
+    let signed: File | undefined;
+
+    TestBed.inject(SigningApiService)
+      .sign({ file: new File(['%PDF'], 'contract.pdf'), format: 'PADES', packaging: 'ENVELOPED', level: 'B' })
+      .subscribe((file) => (signed = file));
+
+    const request = http.expectOne('/api/v1/signatures');
+    const body = request.request.body as FormData;
+    expect(body.get('format')).toBe('PADES');
+    expect(body.get('level')).toBe('B');
+    request.flush(new Blob(['signed'], { type: 'application/pdf' }), {
+      headers: { 'Content-Disposition': 'attachment; filename="contract-signed.pdf"' },
+    });
+    expect(signed?.name).toBe('contract-signed.pdf');
+  });
+
+  it('reports signing as unavailable when the endpoint does not exist', () => {
+    let options: unknown = 'pending';
+
+    TestBed.inject(SigningApiService).options$.subscribe((value) => (options = value));
+
+    http.expectOne('/api/v1/signatures/options').flush({ code: 'NOT_FOUND' }, { status: 404, statusText: 'Not Found' });
+    expect(options).toBeNull();
   });
 });

@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { catchError, interval, of, startWith, switchMap, takeWhile } from 'rxjs';
 import { TrustStatus } from '../../core/api/models';
+import { SigningApiService } from '../../core/api/signing-api.service';
 import { TrustApiService } from '../../core/api/trust-api.service';
 import { I18nService, LANGUAGES, Language } from '../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
@@ -10,10 +11,10 @@ import { TranslatePipe } from '../../core/i18n/translate.pipe';
 /** Polling interval while the backend is still loading the EU trusted lists. */
 export const TRUST_POLL_MS = 10_000;
 
-/** App header: title, trust status indicator and language switcher. */
+/** App header: title, navigation, trust status indicator and language switcher. */
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, TranslatePipe],
+  imports: [RouterLink, RouterLinkActive, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './header.html',
   styleUrl: './header.scss',
@@ -24,6 +25,8 @@ export class Header {
   protected readonly languages = LANGUAGES;
   protected readonly language = this.i18n.language;
   protected readonly status = signal<TrustStatus | null | 'error'>(null);
+  /** The "Sign" link only appears when the backend has signing enabled. */
+  protected readonly signingAvailable = toSignal(inject(SigningApiService).options$, { initialValue: null });
 
   /** Text of the trust indicator; recomputed when the status or the language changes. */
   protected readonly trustText = computed(() => {

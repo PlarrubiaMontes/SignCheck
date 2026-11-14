@@ -94,7 +94,7 @@ and `./mvnw verify` (and the frontend checks, once the frontend exists) pass. Ti
 - [x] **7.2 Signing service** — PAdES / XAdES / CAdES, packaging, level B.
 - [x] **7.3 Level T** — configurable TSA; in tests an in-memory TSP from the test PKI.
 - [x] **7.4 Endpoint** `POST /api/v1/signatures` + tests (sign → validate round trip is `VALID` in `KEYSTORE` mode).
-- [ ] **7.5 Frontend "Sign" page**.
+- [x] **7.5 Frontend "Sign" page**.
 
 ## Phase 8 — Extras (pick freely)
 

@@ -19,3 +19,19 @@ export function toApiProblem(error: unknown): ApiProblem {
   }
   return { status: 0, code: 'VALIDATION_ERROR', detail: null };
 }
+
+/**
+ * Same as {@link toApiProblem} for requests made with `responseType: 'blob'`, whose error body arrives as a
+ * Blob that must be read and parsed first.
+ */
+export async function toApiProblemAsync(error: unknown): Promise<ApiProblem> {
+  if (error instanceof HttpErrorResponse && error.error instanceof Blob) {
+    try {
+      const body: unknown = JSON.parse(await error.error.text());
+      return toApiProblem(new HttpErrorResponse({ status: error.status, error: body }));
+    } catch {
+      return toApiProblem(new HttpErrorResponse({ status: error.status }));
+    }
+  }
+  return toApiProblem(error);
+}

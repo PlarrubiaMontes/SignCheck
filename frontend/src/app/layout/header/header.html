@@ -4,6 +4,14 @@
   </a>
   <span class="tagline">{{ 'app.tagline' | t }}</span>
 
+  <nav class="nav" aria-label="SignCheck">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
+       ariaCurrentWhenActive="page">{{ 'nav.validate' | t }}</a>
+    @if (signingAvailable()) {
+      <a routerLink="/sign" routerLinkActive="active" ariaCurrentWhenActive="page">{{ 'nav.sign' | t }}</a>
+    }
+  </nav>
+
   <p class="trust" role="status" aria-live="polite" data-testid="trust">{{ trustText() }}</p>
 
   <div class="languages" role="group" [attr.aria-label]="'app.language' | t">

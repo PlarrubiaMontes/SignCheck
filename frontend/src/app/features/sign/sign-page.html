@@ -1,0 +1,66 @@
+<section class="card">
+  <h1>{{ 'sign.heading' | t }}</h1>
+
+  @if (options() === null) {
+    <p data-testid="disabled">{{ 'sign.disabled' | t }}</p>
+  } @else if (options(); as opts) {
+    <p class="warning" role="note" data-testid="warning">
+      <span aria-hidden="true">⚠</span> {{ 'sign.warning' | t: { signer: opts.signer } }}
+    </p>
+
+    <form (submit)="$event.preventDefault(); submit()">
+      <app-file-drop [label]="'sign.drop' | t" (filesSelected)="chooseFile($event)" />
+      @if (file(); as selected) {
+        <p class="selected" data-testid="selected-file">{{ selected.name }} ({{ selected.size | fileSize }})</p>
+      }
+
+      <fieldset>
+        <legend>{{ 'sign.format' | t }}</legend>
+        @for (f of opts.formats; track f) {
+          <label>
+            <input type="radio" name="format" [value]="f" [checked]="f === format()" (change)="chooseFormat(f)" />
+            {{ key('sign.format', f) | t }}
+          </label>
+        }
+      </fieldset>
+
+      <fieldset>
+        <legend>{{ 'sign.packaging' | t }}</legend>
+        @for (p of packagings(); track p) {
+          <label>
+            <input type="radio" name="packaging" [value]="p" [checked]="p === packaging()" (change)="packaging.set(p)" />
+            {{ key('sign.packaging', p) | t }}
+          </label>
+        }
+      </fieldset>
+
+      <fieldset>
+        <legend>{{ 'sign.level' | t }}</legend>
+        @for (l of opts.levels; track l) {
+          <label>
+            <input type="radio" name="level" [value]="l" [checked]="l === level()" (change)="level.set(l)" />
+            {{ key('sign.level', l) | t }}
+          </label>
+        }
+      </fieldset>
+
+      @if (errorKey(); as error) {
+        <p class="error" role="alert" data-testid="error"><span aria-hidden="true">⚠</span> {{ error | t }}</p>
+      }
+
+      <button type="submit" class="primary" [disabled]="!canSubmit()" [attr.aria-busy]="busy()">
+        {{ (busy() ? 'sign.signing' : 'sign.submit') | t }}
+      </button>
+    </form>
+
+    @if (signed(); as result) {
+      <div class="done" role="status" data-testid="done">
+        <p>{{ 'sign.done' | t: { name: result.name } }}</p>
+        <button type="button" (click)="download(result)">{{ 'sign.downloadAgain' | t }}</button>
+        <button type="button" class="primary" [disabled]="busy()" (click)="validateNow()">
+          {{ 'sign.validateNow' | t }}
+        </button>
+      </div>
+    }
+  }
+</section>
