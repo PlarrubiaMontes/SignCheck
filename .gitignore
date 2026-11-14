@@ -66,3 +66,7 @@ application-local.properties
 # ---------------------------------------------------------------
 # Trusted List cache (DSS file cache) when running locally
 tl-cache/
+
+# Eclipse workspace / non-Maven output (the workspace must live outside the repo)
+.metadata/
+bin/

@@ -1,6 +1,7 @@
 # SignCheck
 
 ![Status: work in progress](https://img.shields.io/badge/status-work%20in%20progress-orange)
+[![Backend CI](https://github.com/PlarrubiaMontes/SignCheck/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/PlarrubiaMontes/SignCheck/actions/workflows/backend-ci.yml)
 ![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)
 
 SignCheck is an open-source web application that validates advanced electronic signatures
@@ -24,6 +25,14 @@ cd backend
 - Swagger UI: <http://localhost:8080/swagger-ui.html>
 
 Stack: Java 21, Spring Boot 4.1, springdoc-openapi 3.2.
+
+## Continuous integration
+
+- **Backend CI** ([`.github/workflows/backend-ci.yml`](.github/workflows/backend-ci.yml)) runs
+  `./mvnw verify` on Temurin 21 for every push and pull request to `main` that touches `backend/`.
+  Maven dependencies are cached, and Surefire reports are uploaded as an artifact when tests fail.
+- **Dependabot** ([`.github/dependabot.yml`](.github/dependabot.yml)) checks Maven dependencies and
+  GitHub Actions weekly; minor and patch updates are grouped into one pull request per ecosystem.
 
 ## Documentation
 

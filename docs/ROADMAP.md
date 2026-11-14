@@ -15,7 +15,7 @@ and `./mvnw verify` (and the frontend checks, once the frontend exists) pass. Ti
   - `SignCheckProperties` with the structure from ARCHITECTURE §3 (values not used yet).
   - Profiles `dev` and `test`.
   - Done when: `./mvnw verify` passes, `/actuator/health` returns UP, Swagger UI loads, one context-load test.
-- [ ] **0.3 CI**
+- [x] **0.3 CI**
   - GitHub Actions workflow running `./mvnw verify` on push and PR; Dependabot for Maven and GitHub Actions.
   - Done when: workflow file is valid and documented in the README.
 
