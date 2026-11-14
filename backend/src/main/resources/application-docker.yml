@@ -1,0 +1,6 @@
+# Container deployment: eIDAS-aware validation with the EU Trusted Lists.
+# Requires signcheck.trust.lotl-keystore.path/password (Official Journal LOTL signing certificates, see README).
+signcheck:
+  trust:
+    mode: LOTL
+    cache-dir: /var/cache/signcheck/tl

@@ -24,7 +24,59 @@ cd backend
 - Health: <http://localhost:8080/actuator/health>
 - Swagger UI: <http://localhost:8080/swagger-ui.html>
 
-Stack: Java 21, Spring Boot 4.1, springdoc-openapi 3.2.
+Validate a document (add `-F originals=@original.txt` for detached signatures, `-F includeRawReports=true`
+for the DSS XML reports, `-H 'Accept-Language: es'` for Spanish explanations):
+
+```bash
+curl -F file=@contract-signed.pdf http://localhost:8080/api/v1/validations
+curl http://localhost:8080/api/v1/trust/status
+```
+
+## Trust modes
+
+A signature can only be `VALID` if its certificate chain ends in a trusted certificate. `signcheck.trust.mode`
+decides where those come from:
+
+| Mode | Trust anchors | Revocation (OCSP/CRL) | Use |
+|---|---|---|---|
+| `NONE` (profile `dev`) | none: best verdict is `INDETERMINATE` | offline | local development |
+| `KEYSTORE` | certificates in `signcheck.trust.keystore` (PKCS#12) | online | demo CA, integration tests |
+| `LOTL` (profile `docker`) | EU Trusted Lists (+ keystore if present) | online, plus AIA | real eIDAS documents |
+
+`LOTL` mode downloads the EU List of Trusted Lists in the background (`GET /api/v1/trust/status` shows the
+progress), accepts Trusted Lists v5 and v6 and ignores any list whose signature or freshness check fails.
+The LOTL signature is checked against the signing certificates announced in the Official Journal of the EU.
+Those are real EU certificates, so they are **not** in this repository: provide them as a PKCS#12 file with
+`signcheck.trust.lotl-keystore.path` / `.password` (DSS publishes such a keystore with its demos).
+
+All network access (Trusted Lists, CRL, OCSP, AIA) goes through one bean, `NetworkDataLoaders`, with the
+timeouts of `signcheck.network.*`. Tests replace it with an in-memory network, so they never need internet.
+
+Stack: Java 21, Spring Boot 4.1, springdoc-openapi 3.2, EU DSS 6.5.1.
+
+## DSS modules
+
+SignCheck uses [EU DSS](https://github.com/esig/dss) **6.5.1**, the latest release on Maven Central. DSS 6.x
+uses the `jakarta.*` namespace that Spring Boot 4 requires, and 6.5.1 validates Trusted Lists v5 and v6
+(ETSI TS 119 612 v2.4.1). Versions come from `dss-bom`. Only the modules in use are declared:
+
+| Module | Why |
+|---|---|
+| `dss-validation` | signature validation process and reports |
+| `dss-policy-jaxb` | loads the default ETSI validation policy |
+| `dss-pades` + `dss-pades-pdfbox` | PAdES, with PDFBox as PDF backend (the reference implementation; OpenPDF is the alternative) |
+| `dss-xades` | XAdES (XML signatures; brings Apache Santuario) |
+| `dss-cades` | CAdES (CMS signatures, `.p7m` / `.p7s`) |
+| `dss-cms-object` | CMS implementation (in memory; `dss-cms-stream` is still experimental) |
+| `dss-utils-apache-commons` | implementation of DSS utils (the alternative is Guava) |
+| `dss-crl-parser-stream` | streaming CRL parser, lighter on memory than the `X509CRL` one for large CRLs |
+
+Trusted List modules are added by the roadmap task that uses them.
+`DssClasspathTest` checks that exactly one implementation of each pluggable DSS service is on the classpath.
+
+`dss-bom` also inherits third-party versions from its parent POM (JUnit 5, JAXB 3...). The `pom.xml` imports
+Spring Boot's BOM before it, so Spring Boot keeps control of shared libraries and DSS only decides its own
+modules and libraries Spring Boot does not manage (BouncyCastle, PDFBox).
 
 ## Continuous integration
 

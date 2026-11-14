@@ -1,13 +1,31 @@
 spring:
   application:
     name: signcheck
+  messages:
+    basename: messages
+    encoding: UTF-8
+    # Unknown languages fall back to English (messages.properties), not to the server's locale
+    fallback-to-system-locale: false
+  web:
+    locale: en
+    locale-resolver: accept-header
+  servlet:
+    multipart:
+      # Single source of truth: the signcheck.upload.* limits below
+      max-file-size: ${signcheck.upload.max-file-size}
+      max-request-size: ${signcheck.upload.max-request-size}
 
 signcheck:
   upload:
     max-file-size: 20MB
+    max-request-size: 60MB   # signed file + originals for detached signatures
   trust:
     mode: NONE            # NONE | KEYSTORE | LOTL
     lotl-url: https://ec.europa.eu/tools/lotl/eu-lotl.xml
+    # Official Journal (C 276, 16.8.2019) announcing the LOTL signing certificates; newer ones are
+    # discovered through LOTL "pivots". The certificates themselves are NOT in the repository: in LOTL
+    # mode set signcheck.trust.lotl-keystore.path/password to a PKCS#12 holding them (see README).
+    official-journal-url: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.C_.2019.276.01.0001.01.ENG
     cache-dir: ${java.io.tmpdir}/signcheck-tl-cache
     refresh-cron: "0 0 */6 * * *"
     keystore:
@@ -16,9 +34,16 @@ signcheck:
   network:
     connect-timeout: 5s
     read-timeout: 10s
+  cors:
+    allowed-origins: []   # same-origin in production (nginx serves the UI and proxies /api)
   signing:
     enabled: false
     tsa-url: ""           # public TSA for level T (phase 2)
+
+logging:
+  level:
+    # DSS logs a lot at INFO (certificate details included); keep only its warnings
+    eu.europa.esig: WARN
 
 management:
   endpoints:

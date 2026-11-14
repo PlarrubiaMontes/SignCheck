@@ -17,14 +17,17 @@ class SignCheckPropertiesTest {
             .withUserConfiguration(PropertiesConfig.class)
             .withPropertyValues(
                     "signcheck.upload.max-file-size=5MB",
+                    "signcheck.upload.max-request-size=15MB",
                     "signcheck.trust.mode=LOTL",
                     "signcheck.trust.lotl-url=https://example.test/lotl.xml",
+                    "signcheck.trust.official-journal-url=https://example.test/oj",
                     "signcheck.trust.cache-dir=/tmp/tl",
                     "signcheck.trust.refresh-cron=0 0 * * * *",
                     "signcheck.trust.keystore.password=secret-test-only",
                     "signcheck.network.connect-timeout=1s",
                     "signcheck.network.read-timeout=2s",
-                    "signcheck.signing.enabled=false");
+                    "signcheck.signing.enabled=false",
+                    "signcheck.cors.allowed-origins=");
 
     @Test
     void shouldStartWithACompleteConfiguration() {

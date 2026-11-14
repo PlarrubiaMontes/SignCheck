@@ -21,54 +21,54 @@ and `./mvnw verify` (and the frontend checks, once the frontend exists) pass. Ti
 
 ## Phase 1 — Test PKI and first validation (PAdES)
 
-- [ ] **1.1 DSS dependencies**
+- [x] **1.1 DSS dependencies**
   - Add `dss-bom` (latest 6.x with TLv6 support) and the PAdES-related modules.
   - Done when: build passes and the chosen DSS version and modules are noted in the README.
-- [ ] **1.2 Test PKI**
+- [x] **1.2 Test PKI**
   - `TestPki` (BouncyCastle): root, intermediate, signers `valid`, `expired`, `revoked`, untrusted root + signer, CRL.
   - Unit tests asserting the certificates have the expected validity, key usage and chain.
   - Done when: tests pass and the class Javadoc explains what each certificate is for.
-- [ ] **1.3 Signed sample generation (PAdES)**
+- [x] **1.3 Signed sample generation (PAdES)**
   - `SignedSamples.padesBaselineB(...)` using `PAdESService` and a PKCS#12/in-memory token from the test PKI,
     plus `tamper(byte[])` helper.
   - Done when: a test produces a signed PDF that DSS can parse.
-- [ ] **1.4 Validation service + endpoint (PAdES only)**
+- [x] **1.4 Validation service + endpoint (PAdES only)**
   - `DssConfig` with a `CertificateVerifier` bean for mode `NONE`; test config using the test PKI verifier.
   - `ValidationService`, `ValidationReportMapper` (verdict, level, signer, signing time, errors/warnings),
     `ValidationController` (`POST /api/v1/validations`).
   - Done when: MockMvc tests cover valid, tampered and untrusted PAdES with the expected verdicts.
-- [ ] **1.5 Error handling**
+- [x] **1.5 Error handling**
   - `GlobalExceptionHandler` with `ProblemDetail` + `code`: `NO_FILE`, `FILE_TOO_LARGE`,
     `NO_SIGNATURE_FOUND`, `UNSUPPORTED_FORMAT`, `VALIDATION_ERROR`.
   - Done when: each error has a MockMvc test asserting status and `code`.
 
 ## Phase 2 — XAdES, CAdES and detached signatures
 
-- [ ] **2.1 XAdES** — samples enveloped, enveloping, detached; tests for valid and tampered.
-- [ ] **2.2 CAdES** — samples attached and detached; tests for valid and tampered.
-- [ ] **2.3 Detached support in the API** — `originals` multipart part → `setDetachedContents`.
+- [x] **2.1 XAdES** — samples enveloped, enveloping, detached; tests for valid and tampered.
+- [x] **2.2 CAdES** — samples attached and detached; tests for valid and tampered.
+- [x] **2.3 Detached support in the API** — `originals` multipart part → `setDetachedContents`.
   Tests: detached without originals (`INDETERMINATE`), with wrong original (`INVALID`), with right original (`VALID`).
-- [ ] **2.4 Multiple signatures** — PDF with two signatures, one broken; summary and per-signature results correct.
-- [ ] **2.5 Full validation matrix** — every case in ARCHITECTURE §5 has a test. Expired and revoked signers included.
+- [x] **2.4 Multiple signatures** — PDF with two signatures, one broken; summary and per-signature results correct.
+- [x] **2.5 Full validation matrix** — every case in ARCHITECTURE §5 has a test. Expired and revoked signers included.
 
 ## Phase 3 — Trust and revocation
 
-- [ ] **3.1 Trust modes** — `TrustMode` `NONE | KEYSTORE | LOTL`; verifier built from config.
+- [x] **3.1 Trust modes** — `TrustMode` `NONE | KEYSTORE | LOTL`; verifier built from config.
   Done when: properties tests and an integration test per mode (LOTL mocked/offline).
 - [ ] **3.2 LOTL job** — `TrustListService` with `TLValidationJob`, file cache, async startup load,
   scheduled refresh, LOTL signature verification as per DSS docs, TLv5 + TLv6 accepted.
   Done when: unit/integration tests with an offline loader; manual run in `docker` profile loads the EU LOTL (documented).
-- [ ] **3.3 Online revocation** — OCSP + CRL sources with configurable timeouts, only in `LOTL` (and optionally `KEYSTORE`).
-- [ ] **3.4 Trust status endpoint** — `GET /api/v1/trust/status` with loading flag, last refresh, counts.
-- [ ] **3.5 Richer report** — certificate chain, revocation info, timestamps, qualification, best signature time.
+- [x] **3.3 Online revocation** — OCSP + CRL sources with configurable timeouts, only in `LOTL` (and optionally `KEYSTORE`).
+- [x] **3.4 Trust status endpoint** — `GET /api/v1/trust/status` with loading flag, last refresh, counts.
+- [x] **3.5 Richer report** — certificate chain, revocation info, timestamps, qualification, best signature time.
   Mapper unit tests for each field.
 
 ## Phase 4 — API polish
 
-- [ ] **4.1 Raw reports** — `includeRawReports=true` returns simple, detailed, diagnostic and ETSI reports as XML strings.
-- [ ] **4.2 Human messages** — `SubIndication` → message keys, English + Spanish (`messages.properties`, `messages_es.properties`, `Accept-Language`).
-- [ ] **4.3 OpenAPI** — descriptions, examples and error schemas for every endpoint.
-- [ ] **4.4 Hardening** — content-type checks, size limits, no sensitive data in logs (test with a log appender).
+- [x] **4.1 Raw reports** — `includeRawReports=true` returns simple, detailed, diagnostic and ETSI reports as XML strings.
+- [x] **4.2 Human messages** — `SubIndication` → message keys, English + Spanish (`messages.properties`, `messages_es.properties`, `Accept-Language`).
+- [x] **4.3 OpenAPI** — descriptions, examples and error schemas for every endpoint.
+- [x] **4.4 Hardening** — content-type checks, size limits, no sensitive data in logs (test with a log appender).
 
 ## Phase 5 — Frontend
 

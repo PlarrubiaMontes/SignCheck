@@ -1,7 +1,10 @@
-# Local development: offline, no trust anchors. CORS for the Angular dev server arrives with WebConfig.
+# Local development: offline, no trust anchors, CORS for the Angular dev server.
 signcheck:
   trust:
     mode: NONE
+  cors:
+    allowed-origins:
+      - http://localhost:4200
 
 logging:
   level:

@@ -33,9 +33,13 @@ class SignCheckApplicationTest {
     @Test
     void shouldLoadApplicationContextWithDefaultPropertiesFromApplicationYml() {
         assertThat(properties.upload().maxFileSize()).isEqualTo(DataSize.ofMegabytes(20));
+        assertThat(properties.upload().maxRequestSize()).isEqualTo(DataSize.ofMegabytes(60));
         assertThat(properties.trust().mode()).isEqualTo(TrustMode.NONE);
         assertThat(properties.trust().lotlUrl())
                 .isEqualTo(URI.create("https://ec.europa.eu/tools/lotl/eu-lotl.xml"));
+        assertThat(properties.trust().officialJournalUrl().toString())
+                .contains("OJ.C_.2019.276.01.0001.01.ENG");
+        assertThat(properties.trust().lotlKeystore()).isNull();
         assertThat(properties.trust().cacheDir().getFileName()).hasToString("signcheck-tl-cache");
         assertThat(properties.trust().refreshCron()).isEqualTo("0 0 */6 * * *");
         assertThat(properties.trust().keystore().path().getFilename()).isEqualTo("demo-ca.p12");

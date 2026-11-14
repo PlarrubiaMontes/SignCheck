@@ -70,9 +70,13 @@ Import `eu.europa.ec.joinup.sd-dss:dss-bom` (latest 6.x) in `dependencyManagemen
 Check exact artifact names in the DSS documentation for the chosen version. Expected set:
 
 - Formats: `dss-pades`, `dss-pades-pdfbox`, `dss-xades`, `dss-cades`, (`dss-asic-xades`, `dss-asic-cades` later)
-- Validation and trust: `dss-validation` (if separate in the chosen version), `dss-tsl-validation`
-- Required implementations: `dss-utils-apache-commons` (or the Guava one) and a CRL parser
-  (`dss-crl-parser-stream` or `dss-crl-parser-x509crl`)
+- Validation and trust: `dss-validation`, `dss-policy-jaxb` (default validation policy, required since DSS 6.3),
+  `dss-tsl-validation`
+- Required implementations: `dss-utils-apache-commons` (or the Guava one), a CRL parser
+  (`dss-crl-parser-stream` or `dss-crl-parser-x509crl`) and, since DSS 6.3, a CMS implementation
+  (`dss-cms-object`; `dss-cms-stream` is experimental)
+- `dss-bom` inherits third-party versions from its parent (`sd-dss`). Import `spring-boot-dependencies` before it
+  so Spring Boot's versions win for shared libraries (JUnit, JAXB, Mockito...).
 - Phase 2: `dss-token` (PKCS#12 signing token), `dss-service` (online TSP source)
 
 DSS is published on Maven Central; if an artifact is missing there, use the EC repository documented by DSS.
@@ -102,6 +106,8 @@ One `CommonCertificateVerifier` bean configured according to `signcheck.trust.mo
 
 Online revocation uses `OnlineOCSPSource` and `OnlineCRLSource` with a `CommonsDataLoader`
 (timeouts configurable). AIA fetching of missing intermediates: enabled only in `LOTL` mode.
+Note: `new CommonCertificateVerifier()` installs an online AIA source with its own HTTP client by default;
+`DssConfig` removes it so that every network call goes through `NetworkDataLoaders` (the single seam tests replace).
 
 ### Trust lists (LOTL)
 
@@ -151,8 +157,11 @@ All signed test material is **generated**, never committed from the outside worl
   - Signer certificates: `valid`, `expired`, `notYetValid`, `revoked`, `wrongKeyUsage`
   - An untrusted root with its own signer (`untrusted`)
   - A CRL from the intermediate listing `revoked`
-- `TestPkiCertificateVerifierFactory` — `CertificateVerifier` that trusts the test root and uses the
-  generated CRL as an offline revocation source (no network).
+- `OfflineNetwork` / `OfflineNetworkConfig` — in-memory `NetworkDataLoaders` serving the generated CRLs
+  (and Trusted Lists): API tests run the real `KEYSTORE` mode with a generated PKCS#12 holding the test root,
+  so the production verifier is exercised without network.
+- `TestTrustedLists` — signed test LOTL (v6) and national TL (v5/v6), validated against the official XSD,
+  for offline tests of `LOTL` mode (including a LOTL signed by an unannounced certificate).
 - `SignedSamples` — produces signed documents on the fly with DSS services and the test PKI:
   PAdES (B, T with a test TSP if needed), XAdES enveloped / enveloping / detached, CAdES attached / detached,
   plus tampered copies (one byte changed after signing).
@@ -180,8 +189,10 @@ Minimum validation matrix (all must have a test):
 |---|---|
 | valid signature, trusted test root | `VALID` |
 | document modified after signing | `INVALID` (`HASH_FAILURE`) |
-| expired signer certificate | `INDETERMINATE` or `INVALID` per policy (assert the sub-indication) |
-| revoked signer certificate | `INVALID` / `INDETERMINATE` per policy (`REVOKED...`) |
+| expired signer certificate | `INDETERMINATE` (`CERTIFICATE_CHAIN_GENERAL_FAILURE` in DSS 6.5.1: the CRL does not cover expired certificates) |
+| not-yet-valid signer certificate | `INDETERMINATE` (`CERTIFICATE_CHAIN_GENERAL_FAILURE`: CRL older than the certificate) |
+| revoked signer certificate | `INDETERMINATE` (`REVOKED_NO_POE`: no timestamp proves the signature predates the revocation) |
+| signer certificate without signing key usage | `VALID` with a warning (default policy checks key usage at WARN level) |
 | untrusted root | `INDETERMINATE` (`NO_CERTIFICATE_CHAIN_FOUND`) |
 | detached signature without originals | `INDETERMINATE` (`SIGNED_DATA_NOT_FOUND`) |
 | detached signature with wrong original | `INVALID` (`HASH_FAILURE`) |

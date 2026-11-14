@@ -97,6 +97,7 @@ Response `200 OK`:
     {
       "id": "S-8A3F...",
       "verdict": "VALID",
+      "subIndication": null,
       "reason": null,
       "format": "PAdES",
       "level": "PAdES-BASELINE-LT",
@@ -155,6 +156,8 @@ Returns the signed file as `application/octet-stream` with a proper `Content-Dis
 | `INDETERMINATE` | `INDETERMINATE` |
 | `TOTAL_FAILED`, `FAILED` | `INVALID` |
 
+`subIndication` carries the ETSI EN 319 102-1 sub-indication (e.g. `HASH_FAILURE`, `NO_CERTIFICATE_CHAIN_FOUND`)
+as a plain string, so integrators can react to the exact cause; it is `null` for valid signatures.
 Each DSS `SubIndication` maps to a message key (e.g. `HASH_FAILURE` → "The document was modified after it was signed")
 with English and Spanish texts.
 
@@ -169,6 +172,9 @@ RFC 9457 `ProblemDetail` with an extra `code`:
 | 422 | `NO_SIGNATURE_FOUND` | the file is valid but contains no signature |
 | 422 | `UNSUPPORTED_FORMAT` | DSS can't recognise the file as a supported signed document |
 | 500 | `VALIDATION_ERROR` | unexpected failure (no stack traces in the response) |
+
+Standard HTTP errors raised by the framework (wrong method, non-multipart request...) are also
+`ProblemDetail`s; their `code` is the HTTP status name (e.g. `METHOD_NOT_ALLOWED`, `UNSUPPORTED_MEDIA_TYPE`).
 
 ## 5. Non-functional requirements
 

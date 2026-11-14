@@ -27,7 +27,37 @@
     <properties>
         <java.version>21</java.version>
         <springdoc.version>3.2.0</springdoc.version>
+        <!-- EU DSS: 6.x is jakarta-based; 6.5.1 supports Trusted List v6 (TS 119 612 v2.4.1) -->
+        <dss.version>6.5.1</dss.version>
+        <!-- Lets springdoc reuse the Javadoc of controllers and DTOs as OpenAPI descriptions (version per springdoc docs) -->
+        <therapi.version>0.15.0</therapi.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!--
+              dss-bom inherits the dependencyManagement of its parent (sd-dss), which pins third-party
+              libraries such as JUnit 5, Mockito and JAXB 3. Imported BOMs override the parent's management,
+              and between imports the FIRST one wins, so Spring Boot's BOM is re-imported here, before
+              dss-bom, to keep Spring Boot in charge of every library both of them manage.
+            -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${project.parent.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Aligns every eu.europa.ec.joinup.sd-dss module (and BouncyCastle, PDFBox...) on DSS's versions -->
+            <dependency>
+                <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+                <artifactId>dss-bom</artifactId>
+                <version>${dss.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Spring MVC + embedded Tomcat (Boot 4 name of the former spring-boot-starter-web) -->
@@ -49,6 +79,60 @@
             <version>${springdoc.version}</version>
         </dependency>
 
+        <!-- EU DSS: signature validation. Only the modules we use; see README "DSS modules". -->
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-policy-jaxb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-pades</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-pades-pdfbox</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-xades</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-cades</artifactId>
+        </dependency>
+        <!-- Trust and revocation: online CRL/OCSP/AIA sources, HTTP data loaders and Trusted List (LOTL) loading -->
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-tsl-validation</artifactId>
+        </dependency>
+        <!-- DSS defines interfaces for these; exactly one implementation of each must be on the classpath -->
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-cms-object</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-utils-apache-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>eu.europa.ec.joinup.sd-dss</groupId>
+            <artifactId>dss-crl-parser-stream</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.therapi</groupId>
+            <artifactId>therapi-runtime-javadoc</artifactId>
+            <version>${therapi.version}</version>
+        </dependency>
+
         <!-- Generates metadata so IDEs autocomplete the signcheck.* properties -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -67,6 +151,11 @@
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -79,6 +168,11 @@
                         <path>
                             <groupId>org.springframework.boot</groupId>
                             <artifactId>spring-boot-configuration-processor</artifactId>
+                        </path>
+                        <path>
+                            <groupId>com.github.therapi</groupId>
+                            <artifactId>therapi-runtime-javadoc-scribe</artifactId>
+                            <version>${therapi.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
