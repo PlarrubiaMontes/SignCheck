@@ -1,6 +1,11 @@
 # syntax=docker/dockerfile:1
 # ---- Build: compile with the Maven wrapper (tests run in CI, not in the image build) ----
 FROM eclipse-temurin:21-jdk-noble AS build
+# The Maven wrapper falls back to the .tar.gz distribution when unzip is missing, which would then
+# fail the distributionSha256Sum check (that hash is for the .zip). Installing unzip keeps validation on.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends unzip \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /build
 COPY mvnw ./
 COPY .mvn .mvn

@@ -81,7 +81,7 @@ and `./mvnw verify` (and the frontend checks, once the frontend exists) pass. Ti
 
 ## Phase 6 — Delivery
 
-- [ ] **6.1 Dockerfiles + docker-compose** (non-root images, TL cache volume, nginx `/api` proxy).
+- [x] **6.1 Dockerfiles + docker-compose** (non-root images, TL cache volume, nginx `/api` proxy).
 - [ ] **6.2 Smoke test in CI** with `docker compose`.
 - [x] **6.3 README (English)** — what/why, screenshots or GIF, quick start, API examples with `curl`,
   architecture diagram, key decisions (ARCHITECTURE §8), testing approach, roadmap status, licence and DSS credit.
